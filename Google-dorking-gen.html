@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator de Google Dorking</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #33ff00;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 0;
+            font-size: 2.5em;
+        }
+        h2 {
+            margin-top: 5px;
+            font-size: 1.5em;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #33ff00;
+            background: #2a2a2a;
+            color: #33ff00;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #33ff00;
+            background: #2a2a2a;
+            color: #33ff00;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #33ff00;
+            color: black;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #33ff00;
+            background: #2a2a2a;
+            color: #33ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            display: none;
+        }
+        .notification {
+            color: #33ff00;
+            display: none;
+        }
+        #openTabButton {
+            margin-top: 10px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title"></h1>
+    <h2>Proiect Open Source: OFRL</h2>
+
+    <div id="inputContainer">
+        <div class="input-group">
+            <label for="site">Introduceti Site-ul:</label>
+            <input type="text" class="site-input" placeholder="example.com" required>
+            <button onclick="removeInput(this)">-</button>
+        </div>
+    </div>
+    <button onclick="addInput()">+</button>
+
+    <label for="dorkType">Selectați Tipul de Dork:</label>
+    <select id="dorkType" onchange="showOptions()">
+        <option value="">-- Selectați Tipul de Dork --</option>
+        <option value="site">Căutare Site</option>
+        <option value="intitle">Căutare Titlu</option>
+        <option value="inurl">Căutare URL</option>
+        <option value="intext">Căutare Text</option>
+        <option value="filetype">Căutare Tip Fișier</option>
+        <option value="link">Căutare Link</option>
+        <option value="allintitle">Tot în Titlu</option>
+        <option value="allinurl">Tot în URL</option>
+        <option value="allintext">Tot în Text</option>
+        <option value="define">Definiție</option>
+        <option value="cache">Versiune Cache</option>
+        <option value="contains">Conține</option>
+        <option value="info">Informații despre Site</option>
+        <option value="before">Înainte de Dată</option>
+        <option value="after">După Dată</option>
+        <option value="relate">Site-uri Relate</option>
+        <option value="inanchor">În Ancoră</option>
+    </select>
+
+    <div id="options" class="checkbox-group">
+        <h3>Selectați Opțiuni Specifice:</h3>
+        <div id="filetypeOptions" style="display:none;">
+            <label><input type="checkbox" value="pdf"> PDF</label>
+            <label><input type="checkbox" value="doc"> DOC</label>
+            <label><input type="checkbox" value="ppt"> PPT</label>
+            <label><input type="checkbox" value="xls"> XLS</label>
+            <label><input type="checkbox" value="txt"> TXT</label>
+        </div>
+        <div id="beforeAfterOptions" style="display:none;">
+            <label for="date">Introduceți Data (aaaa-mm-zz):</label>
+            <input type="text" id="date" placeholder="2020-06-03">
+        </div>
+    </div>
+
+    <button onclick="generateDork()">Generați Dork</button>
+
+    <h2>Output Generat:</h2>
+    <div id="resultsContainer"></div>
+    <p id="notification" class="notification">Textul a fost copiat în clipboard.</p>
+
+    <h3>Vizitați: <a href="https://ofrl.ro" style="color: #33ff00;">ofrl.ro</a></h3>
+
+    <script>
+        function typeTitle() {
+            const titleElement = document.getElementById('title');
+            const titleText = 'Google Dorking Generator';
+            let index = 0;
+
+            function type() {
+                if (index < titleText.length) {
+                    titleElement.innerText = titleText.slice(0, index + 1);
+                    index++;
+                    setTimeout(type, 100);
+                } else {
+                    setTimeout(() => {
+                        erase();
+                    }, 1000);
+                }
+            }
+
+            function erase() {
+                if (index > 1) {
+                    titleElement.innerText = titleText.slice(0, index - 1);
+                    index--;
+                    setTimeout(erase, 100);
+                } else {
+                    index = 1;
+                    setTimeout(type, 500);
+                }
+            }
+
+            type();
+        }
+
+        typeTitle();
+
+        function addInput() {
+            const inputContainer = document.getElementById('inputContainer');
+            const newInputGroup = document.createElement('div');
+            newInputGroup.className = 'input-group';
+            newInputGroup.innerHTML = `
+                <label for="site">Introduceti Site-ul:</label>
+                <input type="text" class="site-input" placeholder="example.com" required>
+                <button onclick="removeInput(this)">-</button>
+            `;
+            inputContainer.appendChild(newInputGroup);
+        }
+
+        function removeInput(button) {
+            const inputGroup = button.parentElement;
+            inputGroup.remove();
+        }
+
+        function showOptions() {
+            const dorkType = document.getElementById('dorkType').value;
+            const options = document.getElementById('options');
+            const filetypeOptions = document.getElementById('filetypeOptions');
+            const beforeAfterOptions = document.getElementById('beforeAfterOptions');
+
+            options.style.display = 'block';
+            filetypeOptions.style.display = (dorkType === 'filetype') ? 'block' : 'none';
+            beforeAfterOptions.style.display = (dorkType === 'before' || dorkType === 'after') ? 'block' : 'none';
+        }
+
+        function generateDork() {
+            const siteInputs = document.querySelectorAll('.site-input');
+            const dorkType = document.getElementById('dorkType').value;
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '';
+
+            let multipleDomains = siteInputs.length > 1;
+
+            siteInputs.forEach(input => {
+                const site = input.value;
+
+                if (!site.includes('.')) {
+                    alert('Eroare: Vă rugăm să introduceți un site valid cu un sufix de domeniu (de ex., google.com).');
+                    return;
+                }
+
+                let dork = '';
+
+                switch (dorkType) {
+                    case 'site':
+                        dork = `site:${site}`;
+                        break;
+                    case 'intitle':
+                        dork = `intitle:${site}`;
+                        break;
+                    case 'inurl':
+                        dork = `inurl:${site}`;
+                        break;
+                    case 'intext':
+                        dork = `intext:${site}`;
+                        break;
+                    case 'filetype':
+                        const filetypeCheckboxes = document.querySelectorAll('#filetypeOptions input[type="checkbox"]:checked');
+                        const filetypes = Array.from(filetypeCheckboxes).map(cb => cb.value);
+                        if (filetypes.length > 0) {
+                            dork = `site:${site} filetype:${filetypes.join('|')}`;
+                        } else {
+                            alert('Eroare: Vă rugăm să selectați cel puțin un tip de fișier.');
+                            return;
+                        }
+                        break;
+                    case 'link':
+                        dork = `link:${site}`;
+                        break;
+                    case 'allintitle':
+                        dork = `allintitle:${site}`;
+                        break;
+                    case 'allinurl':
+                        dork = `allinurl:${site}`;
+                        break;
+                    case 'allintext':
+                        dork = `allintext:${site}`;
+                        break;
+                    case 'define':
+                        dork = `define:${site}`;
+                        break;
+                    case 'cache':
+                        dork = `cache:${site}`;
+                        break;
+                    case 'contains':
+                        dork = `contains:${site}`;
+                        break;
+                    case 'info':
+                        dork = `info:${site}`;
+                        break;
+                    case 'before':
+                    case 'after':
+                        const beforeDate = document.getElementById('date').value;
+                        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                        if ((dorkType === 'before' || dorkType === 'after') && !dateRegex.test(beforeDate)) {
+                            alert('Eroare: Vă rugăm să introduceți o dată validă în formatul aaaa-mm-zz.');
+                            return;
+                        }
+                        dork = `${dorkType}:${beforeDate} site:${site}`;
+                        break;
+                    case 'relate':
+                        dork = `related:${site}`;
+                        break;
+                    case 'inanchor':
+                        dork = `inanchor:${site}`;
+                        break;
+                }
+
+                if (dork) {
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'result';
+                    resultElement.innerText = dork;
+                    resultElement.style.display = 'block';
+                    resultElement.onclick = function() {
+                        navigator.clipboard.writeText(dork).then(() => {
+                            const notification = document.getElementById('notification');
+                            notification.style.display = 'block';
+                            setTimeout(() => {
+                                notification.style.display = 'none';
+                            }, 2000);
+                        });
+                    };
+                    resultsContainer.appendChild(resultElement);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                            
+.----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
+| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+| |     ____     | || |  _________   | || |  _______     | || |   _____      | || |              | |
+| |   .'    `.   | || | |_   ___  |  | || | |_   __ \    | || |  |_   _|     | || |              | |
+| |  /  .--.  \  | || |   | |_  \_|  | || |   | |__) |   | || |    | |       | || |              | |
+| |  | |    | |  | || |   |  _|      | || |   |  __ /    | || |    | |   _   | || |              | |
+| |  \  `--'  /  | || |  _| |_       | || |  _| |  \ \_  | || |   _| |__/ |  | || |      _       | |
+| |   `.____.'   | || | |_____|      | || | |____| |___| | || |  |________|  | || |     (_)      | |
+| |              | || |              | || |              | || |              | || |              | |
+| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+ '----------------'  '----------------'  '----------------'  '----------------'  '----------------' 
+
+
+ Proiect realizat de OFRL (Organizatia fara raspundere legala)
+
+ https://ofrl.ro
+
+ ,,The transparency of dark,,
